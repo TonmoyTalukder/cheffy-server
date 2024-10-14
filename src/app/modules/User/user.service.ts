@@ -1,8 +1,10 @@
+import { NextFunction, Request, Response } from 'express';
 import { QueryBuilder } from '../../builder/QueryBuilder';
 import { UserSearchableFields } from './user.constant';
 import { TUser } from './user.interface';
 import { User } from './user.model';
 import { FilterQuery } from 'mongoose';
+import { initiateAamarPayment } from '../aamarpay/payment.utils';
 
 const createUser = async (payload: TUser) => {
   const user = await User.create(payload);
@@ -160,11 +162,61 @@ const getUnfollowedUsersForUser = async (userId: string): Promise<TUser[]> => {
   return randomUsers;
 };
 
+// Function to initiate a payment for premium membership
+export const initiatePayment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {  // Change to Promise<void>
+  try {
+    const { userId } = req.params; // Extract userId from the request params
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        statusCode: 404,
+        message: 'User not found',
+      });
+      return; // Make sure to return void here
+    }
+
+    const transactionId = `TRX_CHEFFY_${Date.now()}`;
+    const payableAmount = 400;
+
+    // Create payment data
+    const paymentData = {
+      transactionId: transactionId,
+      amount: payableAmount,
+      customerName: user.name,
+      customerEmail: user.email,
+      customerPhone: user.phone,
+      customerAddress: user.city,
+    };
+
+    console.log(paymentData);
+
+    // Initiate the payment
+    const paymentSession = await initiateAamarPayment(paymentData);
+
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: 'Payment initiated successfully',
+      paymentSession: paymentSession,
+    });
+  } catch (error) {
+    next(error); // Pass any error to the global error handler
+  }
+};
+
 export const UserServices = {
   createUser,
   getAllUsersFromDB,
   getSingleUserFromDB,
   updateUser,
   followUser,
-  getUnfollowedUsersForUser
+  getUnfollowedUsersForUser,
+  // initiatePayment,
 };

@@ -1,6 +1,16 @@
 import { NextFunction, Request, Response } from 'express';
-import { AnyZodObject } from 'zod';
+import { z, AnyZodObject } from 'zod';
 import { catchAsync } from '../utils/catchAsync';
+
+
+export const initiatePaymentSchema = z.object({
+  params: z.object({
+    userId: z.string().uuid(), // Assuming userId is a UUID. Adjust as needed
+  }),
+  body: z.object({
+    // Add any expected body properties if needed
+  }),
+});
 
 const validateRequest = (schema: AnyZodObject) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -29,7 +39,6 @@ export const validateRequestParams = (schema: AnyZodObject) => {
     next();
   });
 };
-
 
 export const validateRequestCookies = (schema: AnyZodObject) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {

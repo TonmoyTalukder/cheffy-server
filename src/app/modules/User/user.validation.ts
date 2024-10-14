@@ -29,6 +29,9 @@ const followUserSchema = z.object({
 });
 
 const updateUserValidationSchema = z.object({
+  params: z.object({
+    id: z.string().length(24, "Invalid ObjectId"),
+  }),
   body: z.object({
     name: z.string().optional(),
     role: z.nativeEnum(USER_ROLE).optional(),
@@ -42,12 +45,13 @@ const updateUserValidationSchema = z.object({
     sex: z.string().optional(),
     topics: z.array(z.string()).optional(),
     isPremium: z.boolean().optional(),
-    followers: z.array(followUserSchema).optional(), // Followers can be an array of TFollowUser
-    following: z.array(followUserSchema).optional(), // Following can be an array of TFollowUser
-    displayPicture: z.string().optional(), 
-    coverPicture: z.string().optional()
+    followers: z.array(followUserSchema).optional(), 
+    following: z.array(followUserSchema).optional(), 
+    displayPicture: z.string().optional(),
+    coverPicture: z.string().optional(),
   }),
 });
+
 
 const followUserValidationSchema = z.object({
   params: z.object({

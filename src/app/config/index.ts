@@ -23,4 +23,9 @@ export default {
   //   meilisearch_master_key: process.env.MEILISEARCH_MASTER_KEY,
   sender_email: process.env.SENDER_EMAIL,
   sender_app_password: process.env.SENDER_APP_PASS,
+
+  baseURL: 'https://​sandbox​.aamarpay.com/jsonpost.php',
+  storeID: 'aamarpaytest',
+  signatureKey: 'dbb74894e82415a2f7ff0ec3a97e4183',
+  paymentVerifyURL: process.env.PAYMENT_VERIFY_URL,
 };

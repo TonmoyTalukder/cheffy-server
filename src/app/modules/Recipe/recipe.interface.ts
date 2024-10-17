@@ -6,16 +6,28 @@ export interface IRecipe {
   instructions: InstructionStep[]; // Array of detailed cooking steps
   image: string; // URL of the image of the recipe
   cookingTime: number; // Estimated cooking time in minutes
-  rating: number; // Average rating of the recipe (1-5)
+  ratings: IRating[]; 
   ratingsCount: number; // Count of ratings given
   tags: string[]; // Tags related to the recipe (e.g., "vegetarian", "gluten-free")
-  upvotes: number; // Number of upvotes received
-  downvotes: number; // Number of downvotes received
+  votes: IVote[]; 
   createdAt: Date; // Timestamp of recipe creation
   updatedAt: Date; // Timestamp of last update
   authorId: string; // ID of the user who created the recipe
   premium: boolean; // Flag indicating if the recipe is for premium users only
   comments: IComment[]; // List of comments on the recipe
+  diet: string;
+  deleted: boolean;
+}
+
+export interface IRating {
+  id: string; 
+  rating: number; // Average rating of the recipe (1-5)
+}
+
+export interface IVote {
+  id: string; 
+  upvote: boolean;
+  downvote: boolean;
 }
 
 export interface Ingredient {

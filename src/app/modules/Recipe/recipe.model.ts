@@ -12,6 +12,17 @@ const InstructionStepSchema = new Schema({
   time: { type: Number, required: true },
 });
 
+const VoteSchema = new Schema({
+  id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  upvote: { type: Boolean, required: true },
+  downvote: { type: Boolean, required: true },
+});
+
+const RatingSchema = new Schema({
+  id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  rating: { type: Number, default: 0 },
+});
+
 const RecipeSchema = new Schema(
   {
     title: { type: String, required: true },
@@ -20,17 +31,20 @@ const RecipeSchema = new Schema(
     instructions: [InstructionStepSchema],
     image: { type: String, required: true },
     cookingTime: { type: Number, required: true },
-    rating: { type: Number, default: 0 },
+    ratings: [RatingSchema],
     ratingsCount: { type: Number, default: 0 },
     tags: [{ type: String }],
-    upvotes: { type: Number, default: 0 },
-    downvotes: { type: Number, default: 0 },
+    votes: [VoteSchema],
     authorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     premium: { type: Boolean, default: false },
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
+    diet: { type: String, required: true },
+    deleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
+
+
 
 // Comment Schema
 const CommentSchema = new Schema(

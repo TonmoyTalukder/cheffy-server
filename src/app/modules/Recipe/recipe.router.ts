@@ -11,6 +11,7 @@ import {
   deleteComment,
   updateRating,
   updateVote,
+  getFeedRecipes,
 } from './recipe.controller';
 import { validateRecipe, validateUpdateRecipe } from './recipe.validation';
 
@@ -26,6 +27,8 @@ router.put('/:id', validateUpdateRecipe, updateRecipe); // Update a recipe
 router.delete('/:id', deleteRecipe); // Delete a recipe
 router.put('/:recipeId/votes/:userId', updateVote); // Update or delete a vote (pass userId to identify the vote in the array)
 router.put('/:recipeId/ratings/:userId', updateRating); // Update or delete a rating (pass userId to identify the rating in the array)
+
+router.get('/feed/:userId', getFeedRecipes); // Get personalized feed of ranked recipes
 
 // Routes for comments
 router.post('/:recipeId/comments', postComment); // Post a comment on a recipe

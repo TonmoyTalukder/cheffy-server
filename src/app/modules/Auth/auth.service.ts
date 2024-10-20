@@ -7,6 +7,7 @@ import { createToken } from '../../utils/verifyJWT';
 import { USER_ROLE, USER_STATUS } from '../User/user.constant';
 import { User } from '../User/user.model';
 import { TLoginUser, TRegisterUser } from './auth.interface';
+import { UserServices } from '../User/user.service';
 // import { cloudinaryUpload } from '../../config/cloudinary.config';
 // import { Express } from 'express';
 
@@ -54,18 +55,18 @@ const registerUser = async (payload: TRegisterUser) => {
   // Create JWT payload
   const jwtPayload = {
     _id: newUser._id,
-    name: newUser.name, 
-    email: newUser.email, 
-    phone: newUser.phone, 
-    role: newUser.role, 
-    status: newUser.status, 
-    city: newUser.city, 
+    name: newUser.name,
+    email: newUser.email,
+    phone: newUser.phone,
+    role: newUser.role,
+    status: newUser.status,
+    city: newUser.city,
     bio: newUser.bio,
     foodHabit: newUser.foodHabit,
     sex: newUser.sex,
     followers: newUser.followers,
     following: newUser.following,
-    displayPicture: newUser.displayPicture, 
+    displayPicture: newUser.displayPicture,
     topics: newUser.topics,
     isPremium: newUser.isPremium
   };
@@ -98,6 +99,19 @@ const loginUser = async (payload: TLoginUser) => {
     throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked!');
   }
 
+  // Check if the user's premium status has expired
+  if (user.isPremium && user.premiumExpiryDate && user.premiumExpiryDate <= new Date()) {
+    // Prepare the update payload for premium status
+    const updatePayload = {
+      isPremium: false,
+      premiumExpiryDate: undefined, // Clear the expiry date
+    };
+
+    // Use the updateUser function to update the premium status
+    await UserServices.updateUser(user._id!, updatePayload);
+    
+  }
+
   //checking if the password is correct
 
   if (!(await User.isPasswordMatched(payload?.password, user?.password)))
@@ -107,18 +121,18 @@ const loginUser = async (payload: TLoginUser) => {
 
   const jwtPayload = {
     _id: user._id,
-    name: user.name, 
-    email: user.email, 
-    phone: user.phone, 
-    role: user.role, 
-    status: user.status, 
-    city: user.city, 
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    status: user.status,
+    city: user.city,
     bio: user.bio,
     foodHabit: user.foodHabit,
     sex: user.sex,
     followers: user.followers,
     following: user.following,
-    displayPicture: user.displayPicture, 
+    displayPicture: user.displayPicture,
     topics: user.topics,
     isPremium: user.isPremium
   };
@@ -217,18 +231,18 @@ const refreshToken = async (token: string) => {
 
   const jwtPayload = {
     _id: user._id,
-    name: user.name, 
-    email: user.email, 
-    phone: user.phone, 
-    role: user.role, 
-    status: user.status, 
-    city: user.city, 
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+    status: user.status,
+    city: user.city,
     bio: user.bio,
     foodHabit: user.foodHabit,
     sex: user.sex,
     followers: user.followers,
     following: user.following,
-    displayPicture: user.displayPicture, 
+    displayPicture: user.displayPicture,
     topics: user.topics,
     isPremium: user.isPremium
   };

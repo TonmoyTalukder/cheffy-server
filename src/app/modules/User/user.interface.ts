@@ -4,29 +4,32 @@ import { USER_ROLE, USER_STATUS } from './user.constant';
 import { TFollowUser } from '../Auth/auth.interface';
 
 export type TUser = {
+  save(): unknown;
   _id?: string;
   name: string;
   displayPicture?: string;
   email: string;
-  phone: string;      
+  phone: string;
   password: string;
   role: keyof typeof USER_ROLE;
   status: keyof typeof USER_STATUS;
-  bio?: string;     
-  city?: string;     
+  bio?: string;
+  city?: string;
   coverPicture?: string;
-  followers?: Array<TFollowUser>; 
-  following?: Array<TFollowUser>; 
-  foodHabit?: string;   
+  followers?: Array<TFollowUser>;
+  following?: Array<TFollowUser>;
+  foodHabit?: string;
   sex?: string;
-  topics?: Array<string>;  
+  topics?: Array<string>;
   isPremium: boolean;
+  premiumExpiryDate?: Date;
   passwordChangedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 };
 
 export interface IUserModel extends Model<TUser> {
+  activatePremium(userId: string): Promise<TUser>;
   isUserExistsByEmail(id: string): Promise<TUser>;
   isPasswordMatched(
     plainTextPassword: string,

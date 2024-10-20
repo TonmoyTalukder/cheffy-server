@@ -28,6 +28,23 @@ const getAllUsers = catchAsync(async (req, res) => {
 const getSingleUser = catchAsync(async (req, res) => {
   const user = await UserServices.getSingleUserFromDB(req.params.id);
 
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Check if the user's premium status has expired
+  if (user.isPremium && user.premiumExpiryDate && user.premiumExpiryDate <= new Date()) {
+    // Prepare the update payload for premium status
+    const updatePayload = {
+      isPremium: false,
+      premiumExpiryDate: undefined, // Clear the expiry date
+    };
+
+    // Use the updateUser function to update the premium status
+    await UserServices.updateUser(user._id, updatePayload);
+    
+  }
+
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,

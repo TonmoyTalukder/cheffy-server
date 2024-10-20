@@ -83,6 +83,9 @@ const userSchema = new Schema<TUser, IUserModel>(
       required: [false, 'At least one topic is required'],
     },
     isPremium: { type: Boolean, default: false },
+    premiumExpiryDate: {
+      type: Date, // Date when premium status should expire
+    },
   },
   {
     timestamps: true,
@@ -110,6 +113,20 @@ userSchema.post('save', function (doc, next) {
 userSchema.statics.isUserExistsByEmail = async function (email: string) {
   return await User.findOne({ email }).select('+password');
 };
+
+userSchema.statics.activatePremium = async function (userId: string) {
+  const premiumDuration = 30; // days
+  const currentUser = await this.findById(userId);
+
+  if (!currentUser) {
+    throw new Error('User not found');
+  }
+
+  currentUser.isPremium = true;
+  currentUser.premiumExpiryDate = new Date(Date.now() + premiumDuration * 24 * 60 * 60 * 1000); // Set expiration date
+  await currentUser.save();
+};
+
 
 userSchema.statics.isPasswordMatched = async function (
   plainTextPassword,

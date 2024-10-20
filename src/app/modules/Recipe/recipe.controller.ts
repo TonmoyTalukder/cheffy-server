@@ -1,5 +1,13 @@
 import { Request, Response } from 'express';
 import { Comment, Recipe } from './recipe.model';
+import { User } from '../User/user.model';
+import {
+  IRating,
+  IRecipe,
+  IVote
+} from './recipe.interface';
+import { Document } from 'mongoose';
+
 
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -23,6 +31,219 @@ export const getRecipes = async (req: Request, res: Response) => {
       })
       .populate('comments');
     res.status(200).json(recipes);
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    res.status(500).json({ error: errorMessage });
+  }
+};
+
+// Get feed recipes with ranking
+// export const getFeedRecipes = async (req: Request, res: Response): Promise<void> => {
+//   try {
+//     const { userId } = req.params;
+
+//     // Fetch user data
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       res.status(404).json({ error: 'User not found' });
+//       return;
+//     }
+
+//     // Fetch all recipes that are not deleted
+//     const recipes = await Recipe.find({ deleted: false })
+//       .populate({
+//         path: 'authorId',
+//         model: 'User', // Use the model name as a string
+//         select: '_id name email isPremium displayPicture', // Fields to include from the User model
+//       })
+//       .populate('comments');
+
+//     // Step 1: Separate recipes based on diet types
+//     const selectedRecipes: (Document<unknown, object, IRecipe> & IRecipe)[] = recipes;
+
+//     // Step 2: Rank recipes based on tag matches, votes, ratings, and diet preference
+//     const recipeRankMap = new Map<string, number>();
+//     const rankThreshold = 13; // Set a rank score threshold
+
+//     selectedRecipes.forEach((recipe) => {
+//       let rankScore = 0;
+
+//       // Calculate rank based on matching tags
+//       const matchingTags = recipe.tags.filter((tag: string) => user?.topics?.includes(tag));
+//       if (matchingTags.length === recipe.tags.length) {
+//         rankScore += 20; // Full match
+//       } else if (matchingTags.length > 0) {
+//         rankScore += 7; // Partial match
+//       }
+
+//       // Calculate the weight of upvotes and downvotes
+//       const upVotesCount = recipe.votes.filter((vote: IVote) => vote.upvote).length;
+//       const downVotesCount = recipe.votes.filter((vote: IVote) => vote.downvote).length;
+
+//       rankScore += upVotesCount * 2.5; // Higher weight for upvotes
+//       rankScore -= downVotesCount * 2; // Higher penalty for downvotes
+
+//       // Adjust ranking based on ratings
+//       if (recipe.ratings.length > 0) {
+//         const averageRating = recipe.ratings.reduce((sum: number, rating: IRating) => sum + rating.rating, 0) / recipe.ratings.length;
+//         rankScore += averageRating * 2; // Higher weight for better average ratings
+//       }
+
+//       // Step 3: Adjust ranking based on user's food habit preference
+//       if (user?.foodHabit === recipe.diet) {
+//         rankScore += 35; // Boost for matching user's diet
+//       } else if (
+//         (user?.foodHabit === 'vegan' && recipe.diet === 'veg') ||
+//         (user?.foodHabit === 'veg' && recipe.diet === 'vegan')
+//       ) {
+//         rankScore += 15; // Small boost for similar diets (e.g., vegan and veg)
+//       } else {
+//         rankScore -= 13; // Penalize non-matching diet
+//       }
+
+//       // Store rank score in a map
+//       recipeRankMap.set(recipe.id.toString(), rankScore);
+//     });
+
+//     // Step 4: Filter recipes by rank score threshold
+//     let filteredRecipes = selectedRecipes.filter(recipe => {
+//       const rankScore = recipeRankMap.get(recipe.id.toString()) || 0;
+//       return rankScore >= rankThreshold; // Only include recipes above the threshold
+//     });
+
+//     // Step 5: Sort the shuffled recipes by rankScore and creation date (newest to oldest)
+//     filteredRecipes.sort((a, b) => {
+//       const rankScoreA = recipeRankMap.get(a.id.toString()) || 0;
+//       const rankScoreB = recipeRankMap.get(b.id.toString()) || 0;
+
+//       if (rankScoreB === rankScoreA) {
+//         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+//       }
+//       return rankScoreB - rankScoreA;
+//     });
+
+//     // Step 6: Randomly shuffle the filtered recipes before sorting
+//     filteredRecipes = filteredRecipes.sort(() => Math.random() - 0.5);
+
+//     // Step 7: Return the ranked and filtered recipes
+//     res.status(200).json(filteredRecipes);
+//   } catch (error) {
+//     const errorMessage = (error as Error).message;
+//     res.status(500).json({ error: errorMessage });
+//   }
+// };
+export const getFeedRecipes = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+    const { page = 1, limit = 10 } = req.query; // Get pagination params, default to page 1 and limit of 10
+
+    // Fetch user data
+    const user = await User.findById(userId);
+    if (!user) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    // Fetch all recipes that are not deleted
+    const recipes = await Recipe.find({ deleted: false })
+      .populate({
+        path: 'authorId',
+        model: 'User', // Use the model name as a string
+        select: '_id name email isPremium displayPicture', // Fields to include from the User model
+      })
+      .populate('comments');
+
+    // Step 1: Separate recipes based on diet types
+    const selectedRecipes: (Document<unknown, object, IRecipe> & IRecipe)[] = recipes;
+
+    // Step 2: Rank recipes based on tag matches, votes, ratings, and diet preference
+    const recipeRankMap = new Map<string, number>();
+    const rankThreshold = 13; // Set a rank score threshold
+
+    selectedRecipes.forEach((recipe) => {
+      let rankScore = 0;
+
+      // Calculate rank based on matching tags
+      const matchingTags = recipe.tags.filter((tag: string) => user?.topics?.includes(tag));
+      if (matchingTags.length === recipe.tags.length) {
+        rankScore += 20; // Full match
+      } else if (matchingTags.length > 0) {
+        rankScore += 7; // Partial match
+      }
+
+      // Calculate the weight of upvotes and downvotes
+      const upVotesCount = recipe.votes.filter((vote: IVote) => vote.upvote).length;
+      const downVotesCount = recipe.votes.filter((vote: IVote) => vote.downvote).length;
+
+      rankScore += upVotesCount * 2.5; // Higher weight for upvotes
+      rankScore -= downVotesCount * 2; // Higher penalty for downvotes
+
+      // Adjust ranking based on ratings
+      if (recipe.ratings.length > 0) {
+        const averageRating = recipe.ratings.reduce((sum: number, rating: IRating) => sum + rating.rating, 0) / recipe.ratings.length;
+        rankScore += averageRating * 2; // Higher weight for better average ratings
+      }
+
+      // Step 3: Adjust ranking based on user's food habit preference
+      if (user?.foodHabit === recipe.diet) {
+        rankScore += 35; // Boost for matching user's diet
+      } else if (
+        (user?.foodHabit === 'vegan' && recipe.diet === 'veg') ||
+        (user?.foodHabit === 'veg' && recipe.diet === 'vegan')
+      ) {
+        rankScore += 15; // Small boost for similar diets (e.g., vegan and veg)
+      } else {
+        rankScore -= 13; // Penalize non-matching diet
+      }
+
+      // Store rank score in a map
+      recipeRankMap.set(recipe.id.toString(), rankScore);
+    });
+
+    // Step 4: Filter recipes by rank score threshold
+    let filteredRecipes = selectedRecipes.filter(recipe => {
+      const rankScore = recipeRankMap.get(recipe.id.toString()) || 0;
+      return rankScore >= rankThreshold; // Only include recipes above the threshold
+    });
+
+    // Step 5: Check if total filtered recipes are less than 20
+    if (filteredRecipes.length < 20) {
+      // Sort all recipes by rank and get top 20
+      selectedRecipes.sort((a, b) => {
+        const rankScoreA = recipeRankMap.get(a.id.toString()) || 0;
+        const rankScoreB = recipeRankMap.get(b.id.toString()) || 0;
+        return rankScoreB - rankScoreA;
+      });
+      filteredRecipes = selectedRecipes.slice(0, 20); // Get top 20 ranked recipes
+    }
+
+    // Step 6: Sort the filtered recipes by rankScore and creation date (newest to oldest)
+    filteredRecipes.sort((a, b) => {
+      const rankScoreA = recipeRankMap.get(a.id.toString()) || 0;
+      const rankScoreB = recipeRankMap.get(b.id.toString()) || 0;
+
+      if (rankScoreB === rankScoreA) {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      return rankScoreB - rankScoreA;
+    });
+
+    // Step 7: Pagination logic (skip and limit)
+    const currentPage = parseInt(page as string, 10);
+    const pageLimit = parseInt(limit as string, 10);
+    const startIndex = (currentPage - 1) * pageLimit;
+    const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + pageLimit);
+
+    // Step 8: Randomly shuffle the filtered recipes before returning
+    const shuffledRecipes = paginatedRecipes.sort(() => Math.random() - 0.5);
+
+    // Step 9: Return shuffled paginated ranked and filtered recipes along with pagination info
+    res.status(200).json({
+      currentPage,
+      totalPages: Math.ceil(filteredRecipes.length / pageLimit),
+      totalRecipes: filteredRecipes.length,
+      recipes: shuffledRecipes,
+    });
   } catch (error) {
     const errorMessage = (error as Error).message;
     res.status(500).json({ error: errorMessage });

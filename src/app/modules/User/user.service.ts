@@ -56,6 +56,27 @@ const updateUser = async (userId: string, payload: Partial<TUser>) => {
   return updatedUser;
 };
 
+const activatePremium = async (userId: string) => {
+  // Fetch the existing user
+  const user = await User.findById(userId);
+  
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Prepare the update payload for activating premium
+  const updatePayload = {
+    isPremium: true,
+    premiumExpiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Set expiry date to 30 days from now
+  };
+
+  // Use the updateUser function to update the user
+  const updatedUser = await UserServices.updateUser(userId, updatePayload);
+
+  return updatedUser;
+};
+
+
 
 const followUser = async (userId: string, targetUserId: string) => {
   const user = await User.findById(userId);
@@ -200,10 +221,14 @@ export const initiatePayment = async (
     // Initiate the payment
     const paymentSession = await initiateAamarPayment(paymentData);
 
+    // Call activatePremium here after successful payment initiation
+    await UserServices.activatePremium(userId);  // Ensure UserServices is imported
+
+    // Send the response only after the premium is activated
     res.status(200).json({
       success: true,
       statusCode: 200,
-      message: 'Payment initiated successfully',
+      message: 'Payment initiated and premium activated successfully',
       paymentSession: paymentSession,
     });
   } catch (error) {
@@ -218,5 +243,6 @@ export const UserServices = {
   updateUser,
   followUser,
   getUnfollowedUsersForUser,
+  activatePremium,
   // initiatePayment,
 };

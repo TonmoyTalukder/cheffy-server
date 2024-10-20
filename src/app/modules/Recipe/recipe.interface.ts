@@ -1,27 +1,27 @@
 export interface IRecipe {
-  id: string; // Unique identifier for the recipe
-  title: string; // Recipe title
-  description: string; // Brief description of the recipe
-  ingredients: Ingredient[]; // List of ingredients for the recipe
-  instructions: InstructionStep[]; // Array of detailed cooking steps
-  image: string; // URL of the image of the recipe
-  cookingTime: number; // Estimated cooking time in minutes
+  id: string; 
+  title: string; 
+  description: string; 
+  ingredients: Ingredient[]; 
+  instructions: InstructionStep[];
+  image: string; 
+  cookingTime: number; 
   ratings: IRating[]; 
-  ratingsCount: number; // Count of ratings given
-  tags: string[]; // Tags related to the recipe (e.g., "vegetarian", "gluten-free")
+  ratingsCount: number; 
+  tags: string[]; 
   votes: IVote[]; 
-  createdAt: Date; // Timestamp of recipe creation
-  updatedAt: Date; // Timestamp of last update
-  authorId: string; // ID of the user who created the recipe
-  premium: boolean; // Flag indicating if the recipe is for premium users only
-  comments: IComment[]; // List of comments on the recipe
+  createdAt: Date; 
+  updatedAt: Date; 
+  authorId: string; 
+  premium: boolean; 
+  comments: IComment[]; 
   diet: string;
   deleted: boolean;
 }
 
 export interface IRating {
   id: string; 
-  rating: number; // Average rating of the recipe (1-5)
+  rating: number; 
 }
 
 export interface IVote {
@@ -31,9 +31,9 @@ export interface IVote {
 }
 
 export interface Ingredient {
-  name: string; // Name of the ingredient
-  amount: string; // Amount/measurement of the ingredient (e.g., "1 cup", "200g")
-  type?: string; // Optional field to categorize ingredients (e.g., "spice", "vegetable")
+  name: string; 
+  amount: string; 
+  type?: string; 
 }
 
 export interface InstructionStep {

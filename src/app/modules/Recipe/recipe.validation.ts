@@ -29,6 +29,7 @@ export const recipeSchema = z.object({
     id: z.string().min(1, 'ID is required'),
     rating: z.number().min(0).max(5).optional().optional(),
   })),
+  report: z.number().optional(),
 });
 
 // Middleware for validating the recipe payload before saving or updating a recipe

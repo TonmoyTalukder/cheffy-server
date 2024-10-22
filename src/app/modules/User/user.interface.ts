@@ -21,6 +21,7 @@ export type TUser = {
   foodHabit?: string;
   sex?: string;
   topics?: Array<string>;
+  report: number;
   isPremium: boolean;
   premiumExpiryDate?: Date;
   passwordChangedAt?: Date;

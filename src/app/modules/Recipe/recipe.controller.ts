@@ -20,6 +20,24 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+// // Get all recipes
+// export const getRecipes = async (req: Request, res: Response) => {
+//   try {
+//     const recipes = await Recipe.find({ deleted: false })
+//       .populate({
+//         path: 'authorId',
+//         model: 'User', // Use the model name as a string
+//         select: '_id name email isPremium displayPicture status', // Fields to include from the User model
+//         match: { status: { $ne: "BLOCKED" } }, // Filter out users with status 'BLOCKED'
+//       })
+//       .populate('comments');
+//     res.status(200).json(recipes);
+//   } catch (error) {
+//     const errorMessage = (error as Error).message;
+//     res.status(500).json({ error: errorMessage });
+//   }
+// };
+
 // Get all recipes
 export const getRecipes = async (req: Request, res: Response) => {
   try {
@@ -27,15 +45,22 @@ export const getRecipes = async (req: Request, res: Response) => {
       .populate({
         path: 'authorId',
         model: 'User', // Use the model name as a string
-        select: '_id name email isPremium displayPicture', // Fields to include from the User model
+        select: '_id name email isPremium displayPicture status', // Fields to include from the User model
+        match: { status: { $ne: "BLOCKED" } }, // Filter out users with status 'BLOCKED'
       })
-      .populate('comments');
-    res.status(200).json(recipes);
+      .populate('comments')
+      .exec();
+
+    // Filter out recipes where the authorId is null (blocked users)
+    const filteredRecipes = recipes.filter(recipe => recipe.authorId !== null);
+
+    res.status(200).json(filteredRecipes);
   } catch (error) {
     const errorMessage = (error as Error).message;
     res.status(500).json({ error: errorMessage });
   }
 };
+
 
 // Get feed recipes with ranking
 // export const getFeedRecipes = async (req: Request, res: Response): Promise<void> => {
@@ -149,12 +174,17 @@ export const getFeedRecipes = async (req: Request, res: Response): Promise<void>
       .populate({
         path: 'authorId',
         model: 'User', // Use the model name as a string
-        select: '_id name email isPremium displayPicture', // Fields to include from the User model
+        select: '_id name email isPremium displayPicture status', // Fields to include from the User model
+        match: { status: { $ne: "BLOCKED" } }, // Filter out users with status 'BLOCKED'
       })
-      .populate('comments');
+      .populate('comments')
+      .exec();
+
+    // Filter out recipes where the authorId is null (blocked users)
+    const activeRecipes = recipes.filter(recipe => recipe.authorId !== null);
 
     // Step 1: Separate recipes based on diet types
-    const selectedRecipes: (Document<unknown, object, IRecipe> & IRecipe)[] = recipes;
+    const selectedRecipes: (Document<unknown, object, IRecipe> & IRecipe)[] = activeRecipes;
 
     // Step 2: Rank recipes based on tag matches, votes, ratings, and diet preference
     const recipeRankMap = new Map<string, number>();
@@ -258,7 +288,7 @@ export const getRecipeById = async (req: Request, res: Response): Promise<void> 
       .populate({
         path: 'authorId',
         model: 'User',
-        select: '_id name email isPremium displayPicture',
+        select: '_id name email isPremium displayPicture', // Fields to include from the User model
       })
       .populate('comments');
     if (!recipe) {
@@ -293,6 +323,31 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
     res.status(400).json({ error: errorMessage });
   }
 };
+
+// Increment the report count of a recipe
+export const reportRecipe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { recipeId } = req.params;
+
+    // Find the recipe by ID and increment the report count
+    const updatedRecipe = await Recipe.findByIdAndUpdate(
+      recipeId,
+      { $inc: { report: 1 } }, // Increment report by 1
+      { new: true }
+    );
+
+    if (!updatedRecipe) {
+      res.status(404).json({ error: 'Recipe not found' });
+      return;
+    }
+
+    res.status(200).json(updatedRecipe); // Return the updated recipe
+  } catch (error) {
+    const errorMessage = (error as Error).message;
+    res.status(500).json({ error: errorMessage });
+  }
+};
+
 
 // Update or delete a vote from the array
 export const updateVote = async (req: Request, res: Response): Promise<void> => {

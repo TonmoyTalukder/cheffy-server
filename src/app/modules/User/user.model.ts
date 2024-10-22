@@ -1,5 +1,6 @@
 /* eslint-disable no-useless-escape */
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { Schema, model } from 'mongoose';
 import config from '../../config';
 import { USER_ROLE, USER_STATUS } from './user.constant';
@@ -19,6 +20,7 @@ const userSchema = new Schema<TUser, IUserModel>(
     email: {
       type: String,
       required: true,
+      unique: true,
       //validate email
       match: [
         /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/,
@@ -86,6 +88,7 @@ const userSchema = new Schema<TUser, IUserModel>(
     premiumExpiryDate: {
       type: Date, // Date when premium status should expire
     },
+    report: {type: Number, default: 0},
   },
   {
     timestamps: true,
@@ -132,8 +135,6 @@ userSchema.statics.isPasswordMatched = async function (
   plainTextPassword,
   hashedPassword
 ) {
-  console.log("Plain text password:", plainTextPassword);
-  console.log("Hashed password for comparison:", hashedPassword);
   return await bcrypt.compare(plainTextPassword, hashedPassword);
 };
 
@@ -145,5 +146,17 @@ userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
     new Date(passwordChangedTimestamp).getTime() / 1000;
   return passwordChangedTime > jwtIssuedTimestamp;
 };
+
+// Method to generate reset token
+userSchema.methods.generatePasswordResetToken = function (): string {
+  const resetToken = crypto.randomBytes(20).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // Token expires in 10 minutes
+  return resetToken;
+};
+
 
 export const User = model<TUser, IUserModel>('User', userSchema);

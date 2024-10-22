@@ -40,6 +40,7 @@ const RecipeSchema = new Schema(
     comments: [{ type: Schema.Types.ObjectId, ref: 'Comment' }],
     diet: { type: String, required: true },
     deleted: { type: Boolean, default: false },
+    report: {type: Number, default: 0},
   },
   { timestamps: true }
 );

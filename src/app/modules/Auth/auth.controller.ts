@@ -69,7 +69,7 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 const changePassword = catchAsync(async (req: Request, res: Response) => {
   const { ...passwordData } = req.body;
 
-  const result = await AuthServices.changePassword(req.user, passwordData);
+  const result = await AuthServices.changePassword(passwordData);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -77,6 +77,8 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+
 
 const refreshToken = catchAsync(async (req: Request, res: Response) => {
   const { refreshToken } = req.cookies;
@@ -90,9 +92,41 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const forgetPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    const response = await AuthServices.forgetPassword(email);
+    res.status(200).json(response);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: 'An unknown error occurred' });
+    }
+  }
+};
+
+const resetPassword = async (req: Request, res: Response) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    const response = await AuthServices.resetPassword(token, newPassword);
+    res.status(200).json(response);
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(400).json({ error: 'An unknown error occurred' });
+    }
+  }
+};
+
 export const AuthControllers = {
   registerUser,
   loginUser,
   changePassword,
   refreshToken,
+  forgetPassword,
+  resetPassword,
 };

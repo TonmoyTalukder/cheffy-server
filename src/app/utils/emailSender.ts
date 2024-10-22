@@ -9,7 +9,7 @@ import httpStatus from 'http-status';
 
 const ReadFile = promisify(fs.readFile);
 
-const sendEmail = async (email: string, html: string, subject: string) => {
+export const sendEmail = async (email: string, html: string, subject: string) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
@@ -24,7 +24,7 @@ const sendEmail = async (email: string, html: string, subject: string) => {
   });
 
   await transporter.sendMail({
-    from: '"FoundX" <tonmoytalukder.ai@gmail.com>', // sender address
+    from: '"Cheffy" <tonmoytalukder.ai@gmail.com>', // sender address
     to: email, // list of receivers
     subject, // Subject line.
     //text: "Hello world?", // plain text body
@@ -36,7 +36,7 @@ const createEmailContent = async (data: object, templateType: string) => {
   try {
     const templatePath = path.join(
       process.cwd(),
-      `src/views/${templateType}.template.hbs`
+      `views/${templateType}.template.hbs`
     );
     const content = await ReadFile(templatePath, 'utf8');
 

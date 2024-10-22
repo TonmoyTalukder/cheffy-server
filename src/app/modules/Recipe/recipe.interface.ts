@@ -17,6 +17,7 @@ export interface IRecipe {
   comments: IComment[]; 
   diet: string;
   deleted: boolean;
+  report: number;
 }
 
 export interface IRating {

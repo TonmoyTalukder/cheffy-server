@@ -22,6 +22,12 @@ router.put('/:id',
   validateRequestParams(UserValidation.updateUserValidationSchema),
   UserControllers.updateUser);
 
+router.put(
+  '/:userId/report',
+  validateRequestParams(UserValidation.reportUserValidationSchema), // Validate userId
+  UserControllers.reportUser
+);
+
 // router.post('/:userId/follow/:targetUserId',
 //   validateRequest(UserValidation.followUserValidationSchema),
 //   UserControllers.followUser);

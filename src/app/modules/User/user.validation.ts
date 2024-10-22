@@ -49,6 +49,7 @@ const updateUserValidationSchema = z.object({
     following: z.array(followUserSchema).optional(), 
     displayPicture: z.string().optional(),
     coverPicture: z.string().optional(),
+    report: z.number().optional(),
   }),
 });
 
@@ -65,9 +66,16 @@ const followUserValidationSchema = z.object({
 });
 
 
+const reportUserValidationSchema = z.object({
+  params: z.object({
+    userId: z.string().length(24, "Invalid ObjectId"), // Ensure userId is a valid 24-character ObjectId
+  }),
+});
+
 
 export const UserValidation = {
   createUserValidationSchema,
   updateUserValidationSchema,
-  followUserValidationSchema
+  followUserValidationSchema,
+  reportUserValidationSchema
 };

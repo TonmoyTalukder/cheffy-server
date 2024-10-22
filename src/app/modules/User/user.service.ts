@@ -59,7 +59,7 @@ const updateUser = async (userId: string, payload: Partial<TUser>) => {
 const activatePremium = async (userId: string) => {
   // Fetch the existing user
   const user = await User.findById(userId);
-  
+
   if (!user) {
     throw new Error('User not found');
   }
@@ -143,7 +143,9 @@ const getUnfollowedUsersForUser = async (userId: string): Promise<TUser[]> => {
   const query: FilterQuery<TUser> = {
     $and: [
       { _id: { $ne: userId } },  // Exclude the current user
-      { _id: { $nin: followingIds } }  // Exclude users the current user is already following
+      { _id: { $nin: followingIds } },  // Exclude users the current user is already following
+      { status: { $ne: "BLOCKED" } },  // Exclude blocked users
+      { role: { $ne: "ADMIN" } }  // Exclude admins
     ]
   };
 

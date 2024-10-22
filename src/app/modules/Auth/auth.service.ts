@@ -8,9 +8,11 @@ import { USER_ROLE, USER_STATUS } from '../User/user.constant';
 import { User } from '../User/user.model';
 import { TLoginUser, TRegisterUser } from './auth.interface';
 import { UserServices } from '../User/user.service';
+import { sendEmail } from '../../utils/emailSender';
 // import { cloudinaryUpload } from '../../config/cloudinary.config';
 // import { Express } from 'express';
 
+const JWT_SECRET = process.env.JWT_ACCESS_SECRET || 'your_jwt_secret';
 
 const registerUser = async (payload: TRegisterUser) => {
   // Check if the user already exists
@@ -156,11 +158,11 @@ const loginUser = async (payload: TLoginUser) => {
 };
 
 const changePassword = async (
-  userData: JwtPayload,
-  payload: { oldPassword: string; newPassword: string }
+  // userData: JwtPayload,
+  payload: { oldPassword: string; newPassword: string, email: string}
 ) => {
   // checking if the user is exist
-  const user = await User.isUserExistsByEmail(userData.email);
+  const user = await User.isUserExistsByEmail(payload.email);
 
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found!');
@@ -187,8 +189,8 @@ const changePassword = async (
 
   await User.findOneAndUpdate(
     {
-      email: userData.email,
-      role: userData.role,
+      email: user.email,
+      role: user.role,
     },
     {
       password: newHashedPassword,
@@ -198,6 +200,7 @@ const changePassword = async (
 
   return null;
 };
+
 
 const refreshToken = async (token: string) => {
   // checking if the given token is valid
@@ -258,9 +261,54 @@ const refreshToken = async (token: string) => {
   };
 };
 
+
+const forgetPassword = async (email: string) => {
+  // Find the user by email
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Generate a token for resetting the password
+  const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
+
+  // Send password reset email
+  const resetLink = `https://cheffy-client.vercel.app/reset-password/${token}`;
+  const html = `<p>You requested a password reset. Click <a href="${resetLink}">here</a> to reset your password. This link will expire in 1 hour.</p>`;
+
+  await sendEmail(email, html, 'Password Reset Request');
+  
+  return { message: 'Password reset email sent' };
+};
+
+const resetPassword = async (token: string, newPassword: string) => {
+  // Verify the token
+  let decoded;
+  try {
+    decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+  } catch (err) {
+    throw new Error('Invalid or expired token');
+  }
+
+  // Find the user by decoded user ID
+  const user = await User.findById(decoded.userId);
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  // Hash the new password and update the user
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
+  await user.save();
+
+  return { message: 'Password has been reset successfully' };
+};
+
 export const AuthServices = {
   registerUser,
   loginUser,
   changePassword,
   refreshToken,
+  forgetPassword,
+  resetPassword
 };

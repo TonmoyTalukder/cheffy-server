@@ -43,9 +43,10 @@ Purpose of this project is developing a recipe sharing social media platform wit
 
 ### Installation Steps
 
-1. git clone https://github.com/TonmoyTalukder/cheffy-client.git
+1. git clone https://github.com/TonmoyTalukder/cheffy-server.git
 2. cd /path/to/your/directory
 3. yarn
+4. yarn run build
 4. yarn run dev
 
 ### Admin Credentials

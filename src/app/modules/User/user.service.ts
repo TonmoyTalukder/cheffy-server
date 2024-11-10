@@ -13,12 +13,7 @@ const createUser = async (payload: TUser) => {
 };
 
 const getAllUsersFromDB = async (query: Record<string, unknown>) => {
-  const users = new QueryBuilder(User.find(), query)
-    .fields()
-    .paginate()
-    .sort()
-    .filter()
-    .search(UserSearchableFields);
+  const users = new QueryBuilder(User.find(), query).search(UserSearchableFields);
 
   const result = await users.modelQuery;
 

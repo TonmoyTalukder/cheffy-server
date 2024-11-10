@@ -5,7 +5,7 @@ import AppError from '../errors/AppError';
 import handleCastError from '../errors/handleCastError';
 import handleValidationError from '../errors/handleValidationError';
 import handleZodError from '../errors/handleZodError';
-import handleDuplicateError from '../errors/handlerDuplicateError';
+// import handleDuplicateError from '../errors/handlerDuplicateError';
 import { TErrorSources } from '../interfaces/error.interface';
 import { TImageFiles } from '../interfaces/image.interface';
 import { deleteImageFromCloudinary } from '../utils/deleteImage';
@@ -42,10 +42,10 @@ const globalErrorHandler: ErrorRequestHandler = async (err, req, res, next) => {
       message = simplifiedError?.message;
       errorSources = simplifiedError?.errorSources;
     } else if (err?.code === 11000) {
-      const simplifiedError = handleDuplicateError(err);
-      statusCode = simplifiedError?.statusCode;
-      message = simplifiedError?.message;
-      errorSources = simplifiedError?.errorSources;
+      // const simplifiedError = handleDuplicateError(err);
+      // statusCode = simplifiedError?.statusCode;
+      // message = simplifiedError?.message;
+      // errorSources = simplifiedError?.errorSources;
     } else if (err instanceof AppError) {
       statusCode = err?.statusCode;
       message = err.message;

@@ -16,6 +16,7 @@ router.post(
   // multerUpload.single('displayPicture'),
   AuthControllers.registerUser
 );
+
 router.post(
   '/login',
   validateRequest(AuthValidation.loginValidationSchema),
@@ -36,7 +37,7 @@ router.post(
 );
 
 router.post(
-  '/reset-password',
+  '/reset-password/:token',
   validateRequest(AuthValidation.resetPasswordSchema),
   AuthControllers.resetPassword
 );

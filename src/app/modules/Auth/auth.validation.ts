@@ -14,20 +14,15 @@ const registerValidationSchema = z.object({
       required_error: 'Password is required',
     }),
     phone: z
-      .string({
-        required_error: 'Phone number is required',
-      })
-      .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number'), // Phone validation (E.164 format)
-    city: z.string({
-      required_error: 'City is required',
-    }),
+      .string().optional(), // Phone validation (E.164 format) .regex(/^\+?[1-9]\d{1,14}$/, 'Invalid phone number')
+    city: z.string().optional(),
     bio: z.string({
       required_error: 'Bio is required',
     }),
     foodHabit: z.string({
       required_error: 'Food habit is required',
     }),
-    sex: z.enum(['Male', 'Female', 'Other'], {
+    sex: z.enum(['Male', 'Female'], {
       required_error: 'Sex is required',
     }),
     followers: z
@@ -36,9 +31,9 @@ const registerValidationSchema = z.object({
     following: z
       .array(z.any())
       .optional(), // Following array can be empty or optional
-    topics: z.array(z.string(), {
-      required_error: 'At least one topic is required',
-    }),
+    topics: z.array(z.string()).optional(), 
+    //   required_error: 'At least one topic is required',
+    // }
     status: z.enum(['active', 'inactive', 'banned']).optional(), // Optional field, defaults to active
     passwordChangedAt: z.date().optional(), // Optional date field
     displayPicture: z
@@ -83,7 +78,8 @@ const forgetPasswordSchema = z.object({
 // Validation schema for reset password
 const resetPasswordSchema = z.object({
   body: z.object({
-    password: z.string().min(8, 'Password must be at least 8 characters long'),
+    newPassword: z.string().min(6, 'Password must be at least 8 characters long'),
+    token: z.string(),
   }),
 });
 

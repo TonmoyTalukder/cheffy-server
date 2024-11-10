@@ -26,7 +26,7 @@ const registerUser = async (payload: TRegisterUser) => {
 
   // Set user status
   payload.status = USER_STATUS.ACTIVE;
-
+    
   payload.isPremium = false;
 
   payload.followers = [];
@@ -44,6 +44,14 @@ const registerUser = async (payload: TRegisterUser) => {
   //   const uploadResult = await cloudinaryUpload.uploader.upload(file.path);
   //   displayPictureUrl = uploadResult.secure_url; // Get the secure URL
   // }
+
+  // Set default values for other optional fields
+  payload.displayPicture = payload.displayPicture ?? 'N/A';
+  payload.city = payload.city ?? 'N/A';
+  payload.bio = payload.bio ?? 'N/A';
+  payload.foodHabit = payload.foodHabit ?? 'N/A';
+  payload.sex = payload.sex ?? 'N/A';
+  payload.topics = payload.topics ?? [];
 
   // Create new user with displayPicture URL included
   const newUser = await User.create({
@@ -111,7 +119,7 @@ const loginUser = async (payload: TLoginUser) => {
 
     // Use the updateUser function to update the premium status
     await UserServices.updateUser(user._id!, updatePayload);
-    
+
   }
 
   //checking if the password is correct
@@ -159,7 +167,7 @@ const loginUser = async (payload: TLoginUser) => {
 
 const changePassword = async (
   // userData: JwtPayload,
-  payload: { oldPassword: string; newPassword: string, email: string}
+  payload: { oldPassword: string; newPassword: string, email: string }
 ) => {
   // checking if the user is exist
   const user = await User.isUserExistsByEmail(payload.email);
@@ -277,7 +285,7 @@ const forgetPassword = async (email: string) => {
   const html = `<p>You requested a password reset. Click <a href="${resetLink}">here</a> to reset your password. This link will expire in 1 hour.</p>`;
 
   await sendEmail(email, html, 'Password Reset Request');
-  
+
   return { message: 'Password reset email sent' };
 };
 
@@ -287,8 +295,10 @@ const resetPassword = async (token: string, newPassword: string) => {
   try {
     decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
   } catch (err) {
+    console.error('Token verification error:', err); // Add logging here
     throw new Error('Invalid or expired token');
   }
+
 
   // Find the user by decoded user ID
   const user = await User.findById(decoded.userId);
@@ -297,9 +307,23 @@ const resetPassword = async (token: string, newPassword: string) => {
   }
 
   // Hash the new password and update the user
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
-  user.password = hashedPassword;
-  await user.save();
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    Number(config.bcrypt_salt_rounds)
+  );
+  // user.password = hashedPassword;
+  // await user.save();
+
+  await User.findOneAndUpdate(
+    {
+      email: user.email,
+      role: user.role,
+    },
+    {
+      password: hashedPassword,
+      passwordChangedAt: new Date(),
+    }
+  );
 
   return { message: 'Password has been reset successfully' };
 };

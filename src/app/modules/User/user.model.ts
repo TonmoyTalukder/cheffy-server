@@ -44,25 +44,25 @@ const userSchema = new Schema<TUser, IUserModel>(
       type: String,
       required: [true, 'Phone number is required'],
       match: [
-        /^\+?[1-9]\d{1,14}$/,
+        /^\+?[0-9]\d{1,14}$/,
         'Please enter a valid phone number',
       ], // Example for E.164 format phone number
     },
     city: {
       type: String,
-      required: [true, 'City is required'],
+      required: [false, 'City is required'],
     },
     bio: {
       type: String,
-      required: [true, 'Bio is required'],
+      required: [false, 'Bio is required'],
     },
     foodHabit: {
       type: String,
-      required: [true, 'Food habit is required'],
+      required: [false, 'Food habit is required'],
     },
     sex: {
       type: String,
-      required: [true, 'Sex is required'],
+      required: [false, 'Sex is required'],
     },
     followers: {
       type: [{ type: Schema.Types.Mixed }],

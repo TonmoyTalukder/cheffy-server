@@ -107,8 +107,16 @@ const forgetPassword = async (req: Request, res: Response) => {
   }
 };
 
-const resetPassword = async (req: Request, res: Response) => {
+const resetPassword = async (req: Request, res: Response): Promise<void> => {
   const { token, newPassword } = req.body;
+
+  console.log(req.body);
+
+  // Check if token is provided
+  if (!token) {
+    res.status(400).json({ error: 'Token is required' });
+    return; // Early return
+  }
 
   try {
     const response = await AuthServices.resetPassword(token, newPassword);
@@ -121,6 +129,8 @@ const resetPassword = async (req: Request, res: Response) => {
     }
   }
 };
+
+
 
 export const AuthControllers = {
   registerUser,

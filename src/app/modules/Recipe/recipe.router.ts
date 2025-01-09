@@ -14,13 +14,13 @@ import {
   getFeedRecipes,
   reportRecipe,
 } from './recipe.controller';
-import { validateRecipe, validateUpdateRecipe } from './recipe.validation';
+import { validateUpdateRecipe } from './recipe.validation';
 
 const router = Router();
 
 // Routes for recipes
 router.post('/', 
-  validateRecipe,
+  // validateRecipe,
    createRecipe); // Create a new recipe
 router.get('/', getRecipes); // Get all recipes
 router.get('/:id', getRecipeById); // Get a recipe by ID
